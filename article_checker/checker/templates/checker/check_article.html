@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carina - Abstract Checker</title>
+
+    {% load static %}
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+  <body>
+    <header class="header">
+      <img src="{% static 'images/carina.png' %}" alt="Logo" />
+      <nav class="navbar">
+        <a href="#">Home</a>
+        <a href="#">About</a>
+        <a href="#">Services</a>
+      </nav>
+    </header>
+    <div class="container">
+      <h1 class="form-title">Carina</h1>
+      <p class="description">
+        Quick and easy tool to verify your abstract follows the recommended
+        semi-structure.
+      </p>
+      <form id="abstractForm">
+        <div class="form-group">
+          <input
+            type="text"
+            class="form-control form-control-title"
+            placeholder="Enter your title here..."
+            required
+          />
+        </div>
+        <div class="form-group">
+          <textarea
+            class="form-control form-control-abstract"
+            placeholder="Enter your abstract here..."
+            oninput="updateWordCount()"
+            required
+          ></textarea>
+        </div>
+        <p class="word-count">Word Count: 0/200</p>
+        <button type="submit" href="{% templates 'result.html' %}" class="btn">Check Abstract</button>
+      </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/script.js'%}"></script>
+  </body>
+</html>
