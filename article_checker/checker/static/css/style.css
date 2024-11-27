@@ -65,6 +65,12 @@ body {
   border-radius: 25px;
   padding: 20px;
 }
+.form-keyword {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #000;
+}
 .btn {
   background-color: #6a0dad;
   color: white;

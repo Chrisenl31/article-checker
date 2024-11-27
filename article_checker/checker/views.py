@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from checker.utils import check_abstract_structure
 from .forms import AbstractForm
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
@@ -8,26 +9,33 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 from django.utils import timezone
 from django.urls import reverse
+from django.views.generic import ListView
 from .models import *
+from .models import Titles, Abstracts, Keywords
+from .forms import TitleForm, AbstractForm, KeywordForm
 
 
 @login_required
 def check_article(request):
     if request.method == "POST":
-        title = request.POST.get("title")
-        abstract = request.POST.get("abstract")
+        # Ambil input dari form
+        title_text = request.POST.get("title")
+        abstract_text = request.POST.get("abstract")
+        keywords_text = request.POST.get("keywords")
 
-        # Data `title` dan `abstract` sudah bisa digunakan untuk NLP di sini
-        # Model NLP yang akan memproses data ini ditangani tim lain
+        # Simpan data ke dalam model
+        title_obj = Titles.objects.create(user=request.user, title=title_text)
+        abstract_obj = Abstracts.objects.create(title=title_obj, abstract=abstract_text)
+        Keywords.objects.create(abstract=abstract_obj, keyword_list=keywords_text)
 
-        # Kirim data ke halaman result untuk ditampilkan
+        # Data berhasil disimpan, kirim ke halaman result untuk ditampilkan
         return render(
             request,
             "checker/result.html",
             {
-                "title": title,
-                "abstract": abstract,
-                #"nlp_result": nlp_result,
+                "title": title_text,
+                "abstract": abstract_text,
+                "keywords": keywords_text,
             },
         )
 

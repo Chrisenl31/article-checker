@@ -1,5 +1,5 @@
 def check_abstract_structure(abstract):
-    required_sections = ["purpose", "method", "results", "conclusion"]
+    required_sections = ["background", "purpose", "method", "results", "conclusion"]
     abstract_lower = abstract.lower()
     for section in required_sections:
         if section not in abstract_lower:
