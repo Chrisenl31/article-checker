@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+<<<<<<< HEAD
 <head>
+=======
+  <head>
+>>>>>>> bb9c6095d588aa90c65115f79eb088b4c7c4aef9
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Carina - Abstract Analysis</title>
@@ -8,6 +12,7 @@
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
         rel="stylesheet"
     />
+<<<<<<< HEAD
     <link rel="stylesheet" href="{% static 'css/resultstyle.css' %}">
 </head>
 <body>
@@ -84,12 +89,50 @@
                     </div>
                 </div>
             </div>
+=======
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/resultstyle.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <h1>Carina</h1>
+        <p>
+          Quick and easy tool to verify your abstract follows the recommended
+          structure.
+        </p>
+      </header>
+
+      <!-- Result Section -->
+      <div class="result-section">
+        <h3>Result</h3>
+        <div class="result-box">
+          <h5>Title</h5>
+          <p>{{ title }}</p>
+        </div>
+        <div class="result-box">
+          <h5>Abstract</h5>
+          <p>{{ abstract }}</p>
+        </div>
+
+        <!-- Di sini akan ditambahkan hasil analisis NLP setelah diproses -->
+        <div class="result-box">
+          <h5>Analysis Result</h5>
+          <p>{{ nlp_result }}</p>
+          <!-- Tampilkan hasil NLP di sini -->
+>>>>>>> bb9c6095d588aa90c65115f79eb088b4c7c4aef9
         </div>
     </div>
 
+<<<<<<< HEAD
     <!-- Footer -->
     <footer class="text-center mt-4">
         <p>&copy; 2024 Carina. All Rights Reserved.</p>
+=======
+    <footer>
+      <p>&copy; 2024 Carina. All Rights Reserved.</p>
+>>>>>>> bb9c6095d588aa90c65115f79eb088b4c7c4aef9
     </footer>
 
     <!-- Bootstrap JS -->
