@@ -1,114 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
-  <>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Carina - Abstract Analysis</title>
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
     />
-    <link rel="stylesheet" href="article_checker/static/css/resultstyle.css">
-  </head>
-  <body>
+    <link rel="stylesheet" href="{% static 'css/resultstyle.css' %}">
+</head>
+<body>
     <div class="container">
-      <!-- Header -->
-      <header>
-        <h1>Carina</h1>
-        <p>Quick and easy tool to verify your abstract follows the recommended structure.</p>
-      </header>
+        <header class="text-center my-4">
+            <h1>Carina</h1>
+            <p>Quick and easy tool to verify your abstract follows the recommended structure.</p>
+        </header>
 
-      <!-- Input Section -->
-      <div class="input-section">
-        <h3>Title</h3>
-        <input
-          type="text"
-          class="form-control"
-          value="Lorem ipsum dolor sit amet,"
-        />
-        <h3>Abstract</h3>
-        <textarea
-          class="form-control"
-        >Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus imperdiet...</textarea>
-        <p class="text-end">Word Count: 178/200</p>
-        <button class="btn-check">Check Abstract</button>
-      </div>
+        <!-- Input Section -->
+        <div class="input-section mb-4">
+            <h3>Title</h3>
+            <input
+                type="text"
+                class="form-control mb-3"
+                value="{{ title }}"
+                readonly
+            />
+            <h3>Abstract</h3>
+            <textarea
+                class="form-control mb-3"
+                readonly
+            >{{ abstract }}</textarea>
+            <p class="text-end">Word Count: {{ word_count }}/200</p>
+        </div>
 
-      <!-- Result Section -->
-      <div class="result-section">
-        <h3>The Result</h3>
-        <div class="result-box">
-          <h5>Title</h5>
-          <p>Lorem ipsum dolor sit amet : nisi lorem egestas odio, vitae scelerisque</p>
-        </div>
-        <div class="result-box">
-          <h5>Relationship with abstract</h5>
-          <div class="progress">
-            <div
-              class="progress-bar"
-              role="progressbar"
-              style="width: 75%;"
-              aria-valuenow="75"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            ></div>
-          </div>
-        </div>
-        <div class="result-box">
-          <h5>Your Abstract</h5>
-          <ul>
-            <li>Introduction</li>
-            <li>Methods</li>
-            <li>Result</li>
-            <li>Keywords</li>
-            <li>Discussion</li>
-          </ul>
-        </div>
-        <div class="result-box">
-          <h5>Recommended Abstract</h5>
-          <p>
-            [Background]:
-            [Purposes]:
-            [Methods]:
-            [Results]:
-            [Conclusions]:
-          </p>
-        </div>
-      </div>
+        <!-- Result Section -->
+        <div class="result-section mb-4">
+            <h3>The Result</h3>
 
-      <!-- Features Section -->
-      <div class="features-section">
-        <h3>Our Features</h3>
-        <div class="row">
-          <div class="col-md-4">
-            <div class="feature-box">
-              <h5>Detailed Feedback</h5>
-              <p>
-                Get personalized suggestions to improve your abstract's clarity and organization.
-              </p>
+            <div class="result-box mb-4">
+                <h5>Your Abstract</h5>
+                <ul>
+                    {% for label, sentences in abstract_sections.items %}
+                        <li><strong>{{ label }}</strong>: {{ sentences|join:", " }}</li>
+                    {% endfor %}
+                </ul>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="feature-box">
-              <h5>Automated Structure Analysis</h5>
-              <p>
-                Our tool quickly analyzes your abstract and identifies key sections.
-              </p>
+
+            <div class="result-box">
+                <h5>Recommended Abstract</h5>
+                <p>
+                    {% for section, guideline in recommended_structure.items %}
+                        <strong>{{ section }}:</strong> {{ guideline }}<br>
+                    {% endfor %}
+                </p>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="feature-box">
-              <h5>Free and Easy to Use</h5>
-              <p>Check as many abstracts as you like with no cost.</p>
-            </div>
-          </div>
         </div>
-      </div>
+
+        <!-- Features Section -->
+        <div class="features-section mb-4">
+            <h3>Our Features</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="feature-box text-center">
+                        <h5>Detailed Feedback</h5>
+                        <p>
+                            Get personalized suggestions to improve your abstract's clarity and organization.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-box text-center">
+                        <h5>Automated Structure Analysis</h5>
+                        <p>
+                            Our tool quickly analyzes your abstract and identifies key sections.
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-box text-center">
+                        <h5>Free and Easy to Use</h5>
+                        <p>Check as many abstracts as you like with no cost.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
-    <footer>
-      <p>&copy; 2024 Carina. All Rights Reserved.</p>
+    <footer class="text-center mt-4">
+        <p>&copy; 2024 Carina. All Rights Reserved.</p>
     </footer>
-  </body>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>
