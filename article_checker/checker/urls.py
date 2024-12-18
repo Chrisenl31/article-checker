@@ -14,5 +14,7 @@ urlpatterns = [
         name="password-reset-sent",
     ),
     path("reset-password/<str:reset_id>/", views.ResetPassword, name="reset-password"),
+    path('check-abstract/', views.check_article, name='check_article'),
+    path('result/', views.result, name="result")
 ]
 

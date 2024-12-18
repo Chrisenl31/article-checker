@@ -1,6 +1,7 @@
-from django.db import models
-from django.contrib.auth.models import User
 import uuid
+
+from django.contrib.auth.models import User
+from django.db import models
 
 
 class PasswordReset(models.Model):
@@ -10,3 +11,12 @@ class PasswordReset(models.Model):
 
     def __str__(self):
         return f"Password reset for {self.user.username} at {self.created_when}"
+
+class AbstractInput(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.TextField(max_length=255)
+    abstract=models.TextField(max_length=450)
+    keywords=models.TextField(max_length=255)
+
+    def __str__(self):
+        return self.title

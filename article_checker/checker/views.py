@@ -7,6 +7,7 @@ from django.core.mail import EmailMessage
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AbstractForm
 from .models import *
@@ -207,3 +208,91 @@ def ResetPassword(request, reset_id):
         return redirect("forgot-password")
 
     return render(request, "checker/reset_password.html")
+
+
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+
+from .trial import get_classifier
+
+
+@login_required
+def check_article(request):
+    if request.method == "POST":
+        # Get data from form submission
+        title = request.POST.get("title")
+        abstract = request.POST.get("abstract")
+        keywords = request.POST.get("keywords")
+
+        # Store data in session to pass it to the next view
+        request.session['title'] = title
+        request.session['abstract'] = abstract
+        request.session['keywords'] = keywords
+
+        print(title)
+        print(abstract)
+        print(keywords)
+
+        # Redirect to result view
+        return redirect("result")  # Use URL name for cleaner redirection
+
+    return render(request, "checker/check_article.html")
+
+
+@login_required
+def result(request):
+    # # Retrieve stored session data
+    title = request.session.get("title", "")
+    abstract = request.session.get("abstract", "")
+    keywords = request.session.get("keywords", "")
+
+    # if not abstract:
+    #     return redirect("check-abstract")
+
+
+    nlp_result = get_classifier().predict_abstract_sections(abstract)
+
+    return render(
+        request,
+        "checker/result.html",
+        {
+            "title": title,
+            "abstract": abstract,
+            "keywords": keywords,
+            "nlp_result": nlp_result,
+        },
+    )
+
+import pandas as pd
+from flask import Blueprint, jsonify, request
+
+# Initialize Blueprint
+views = Blueprint('views', __name__)
+
+# CSV Storage for User Abstracts
+abstracts_df = pd.DataFrame(columns=['Abstract'])
+
+@views.route('/save_abstract', methods=['POST'])
+def save_abstract():
+    try:
+        # Receive abstract from user input
+        abstract = request.form.get('abstract')
+        if not abstract or not abstract.strip():
+            return jsonify({"error": "Abstract cannot be empty."}), 400
+        
+        # Save dataset
+        global abstracts_df
+        abstracts_df = pd.concat([abstracts_df, pd.DataFrame({'Abstract': [abstract]})], ignore_index=True)
+        abstracts_df.to_csv("abstracts_by_user.csv", index=False)
+        
+        # Predict abstract sections
+        predicted_sections = get_classifier().predict_abstract_sections(abstract)
+        
+        return jsonify({
+            "message": "Input loaded successfully!",
+            "predicted_sections": predicted_sections
+        }), 200
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
