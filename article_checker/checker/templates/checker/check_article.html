@@ -27,7 +27,7 @@
         Quick and easy tool to verify your abstract follows the recommended
         semi-structure.
       </p>
-      <form id="abstractForm" method="post" action="/result/">
+      <form id="abstractForm" method="POST" action="{% url 'result' %}">
         {% csrf_token %}
         <div class="form-group">
           <input
@@ -60,12 +60,12 @@
             required
           />
         </div>
-        <button type="submit" id="submit-button" class="btn">
+        <button type="submit" id="check-button" class="btn">
           Check Abstract
         </button>
       </form>
 
-      <div class="result-section" style="display: none;">
+      <div class="result-section" style="display: none">
         <h3>Results</h3>
         <p class="placeholder-text">Processing your abstract...</p>
       </div>
@@ -75,38 +75,40 @@
     <script src="{% static 'js/script.js' %}"></script>
     <script>
       function updateWordCount() {
-        const abstractInput = document.querySelector('#abstract-input');
-        const wordCountDisplay = document.querySelector('#word-count');
+        const abstractInput = document.querySelector("#abstract-input");
+        const wordCountDisplay = document.querySelector("#word-count");
         const wordCount = abstractInput.value.trim().split(/\s+/).length;
         wordCountDisplay.textContent = `Word Count: ${wordCount}/450`;
 
         if (wordCount > 450) {
-        wordCountDisplay.style.color = 'red';
-  } else {
-    wordCountDisplay.style.color = 'black';
-  }
+          wordCountDisplay.style.color = "red";
+        } else {
+          wordCountDisplay.style.color = "black";
+        }
       }
 
-      document.querySelector('#abstractForm').addEventListener('submit', function (e) {
-        e.preventDefault();
+      document
+        .querySelector("#abstractForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
 
-        const title = document.querySelector('#title-input').value;
-        const abstract = document.querySelector('#abstract-input').value;
-        const keywords = document.querySelector('#keywords-input').value;
+          const title = document.querySelector("#title-input").value;
+          const abstract = document.querySelector("#abstract-input").value;
+          const keywords = document.querySelector("#keywords-input").value;
 
-        fetch('/check-abstract/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}',
-          },
-          body: JSON.stringify({ title, abstract, keywords }),
-        })
-          .then(response => response.json())
-          .then(data => {
-            const resultSection = document.querySelector('.result-section');
-            resultSection.style.display = 'block';
-            resultSection.innerHTML = `
+          fetch("/check-abstract/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({ title, abstract, keywords }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              const resultSection = document.querySelector(".result-section");
+              resultSection.style.display = "block";
+              resultSection.innerHTML = `
               <h3>Results</h3>
               <div class="result-box">
                 <h5>Similarity with Database Abstracts</h5>
@@ -126,47 +128,57 @@
                 <ul>
                   ${Object.keys(data.labels)
                     .map(
-                      key =>
+                      (key) =>
                         `<li><strong>${key}:</strong> ${data.labels[key].join(
-                          ', '
+                          ", "
                         )}</li>`
                     )
-                    .join('')}
+                    .join("")}
                 </ul>
               </div>`;
-          })
-          .catch(error => console.error('Error:', error));
-      });
+            })
+            .catch((error) => console.error("Error:", error));
+        });
     </script>
     <script>
-      document.getElementById('check-button').addEventListener('click', function() {
-          const abstractText = document.getElementById('abstract').value;
-
-          if (!abstractText.trim()) {
-              alert("Please enter an abstract before checking.");
-              return;
-          }
+      document
+        .getElementById("check-button")
+        .addEventListener("click", function () {
+          const abstractText = document.getElementById("abstract-input").value;
+          const keywords = document.getElementById("keywords-input").value;
+          const title = document.getElementById("title-input").value;
 
           const formData = new FormData();
-          formData.append('abstract', abstractText);
-          fetch('/save_abstract', {
-              method: 'POST',
-              body: formData
+          formData.append("abstract", abstractText);
+          formData.append("keywords", keywords);
+          formData.append("title", title);
+          fetch("/result/", {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+              ).value,
+            },
+            body: formData,
           })
-          .then(response => response.json())
-          .then(data => {
-              if (data.error) {
-                  document.getElementById('response').textContent = "Error: " + data.error;
+            .then((response) => {
+              if (response.ok) {
+                return response.json();
               } else {
-                  document.getElementById('response').textContent = JSON.stringify(data.predicted_sections, null, 2);
-                  alert("Abstract saved successfully!");
+                throw new Error("Network response was not ok");
               }
-          })
-          .catch(error => {
-              document.getElementById('response').textContent = "An error occurred: " + error;
-          });
-      });
-  </script>
-
+            })
+            .then((data) => {
+              console.log(data);
+              window.location.href = "/result/";
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+            })
+            .finally(() => {
+              button.disabled = false; // Re-enable the button after processing
+            });
+        });
+    </script>
   </body>
 </html>

@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AbstractForm
 from .models import *
+from .trial import process_data
 
 
 @login_required
@@ -29,7 +30,7 @@ def check_article(request):
             {
                 "title": title,
                 "abstract": abstract,
-                #"nlp_result": nlp_result,
+                # "nlp_result": nlp_result,
             },
         )
 
@@ -37,13 +38,13 @@ def check_article(request):
 
 
 def RegisterView(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         # getting user inputs from frontend
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
         user_data_has_error = False
 
@@ -76,11 +77,11 @@ def RegisterView(request):
 
 
 def LoginView(request):
-    if request.method == 'POST':
+    if request.method == "POST":
 
         # getting user inputs from frontend
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+        username = request.POST.get("username")
+        password = request.POST.get("password")
 
         # authenticate credentials
         user = authenticate(request=request, username=username, password=password)
@@ -108,8 +109,8 @@ def LogoutView(request):
 
 
 def ForgotPassword(request):
-    if request.method == 'POST':
-        email = request.POST.get('email')
+    if request.method == "POST":
+        email = request.POST.get("email")
         # verify if email exists
         try:
             user = User.objects.get(email=email)
@@ -118,26 +119,28 @@ def ForgotPassword(request):
             new_password_reset.save()
 
             # creat password reset url;
-            password_reset_url = reverse('reset-password', kwargs={'reset_id': new_password_reset.reset_id})
+            password_reset_url = reverse(
+                "reset-password", kwargs={"reset_id": new_password_reset.reset_id}
+            )
 
             full_password_reset_url = (
                 f"{request.scheme}://{request.get_host()}{password_reset_url}"
             )
 
             # email content
-            email_body = f'Reset your password using the link below:\n\n\n{full_password_reset_url}'
+            email_body = f"Reset your password using the link below:\n\n\n{full_password_reset_url}"
 
             email_message = EmailMessage(
-                'Reset your password', # email subject
+                "Reset your password",  # email subject
                 email_body,
-                settings.EMAIL_HOST_USER, # email sender
-                [email] # email  receiver 
+                settings.EMAIL_HOST_USER,  # email sender
+                [email],  # email  receiver
             )
 
             email_message.fail_silently = True
             email_message.send()
 
-            return redirect('password-reset-sent', reset_id=new_password_reset.reset_id)
+            return redirect("password-reset-sent", reset_id=new_password_reset.reset_id)
 
         except User.DoesNotExist:
             messages.error(request, f"No user with email '{email}' found")
@@ -151,29 +154,29 @@ def PasswordResetSent(request, reset_id):
         return render(request, "checker/password_reset_sent.html")
     else:
         # redirect to forgot password page if code does not exist
-        messages.error(request, 'Invalid reset id')
-        return redirect('forgot-password')
+        messages.error(request, "Invalid reset id")
+        return redirect("forgot-password")
 
 
 def ResetPassword(request, reset_id):
 
     try:
         reset_id = PasswordReset.objects.get(reset_id=reset_id)
-        
-        if request.method == 'POST':
 
-            password = request.POST.get('password')
-            confirm_password = request.POST.get('confirm_password')
-            
+        if request.method == "POST":
+
+            password = request.POST.get("password")
+            confirm_password = request.POST.get("confirm_password")
+
             passwords_have_error = False
 
             if password != confirm_password:
                 passwords_have_error = True
-                messages.error(request, 'Passwords do not match')
+                messages.error(request, "Passwords do not match")
 
             if len(password) < 8:
                 passwords_have_error = True
-                messages.error(request, 'Password must be at least 8 characters long')
+                messages.error(request, "Password must be at least 8 characters long")
 
             # check to make sure link has not expired
             expiration_time = reset_id.created_when + timezone.timedelta(minutes=10)
@@ -182,24 +185,24 @@ def ResetPassword(request, reset_id):
                 # delete reset id if expired
                 reset_id.delete()
                 passwords_have_error = True
-                messages.error(request, 'Reset link has expired')
-                
+                messages.error(request, "Reset link has expired")
+
             # reset password
             if not passwords_have_error:
                 user = reset_id.user
                 user.set_password(password)
                 user.save()
-                
+
                 # delete reset id after use
                 reset_id.delete()
 
                 # redirect to login
-                messages.success(request, 'Password reset. Proceed to login')
-                return redirect('login')
+                messages.success(request, "Password reset. Proceed to login")
+                return redirect("login")
 
             else:
                 # redirect back to password reset page and display errors
-                return redirect('reset-password', reset_id=reset_id)
+                return redirect("reset-password", reset_id=reset_id)
 
     except PasswordReset.DoesNotExist:
 
@@ -214,85 +217,85 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 
-from .trial import get_classifier
+# from .trial import get_classifier
 
 
 @login_required
 def check_article(request):
-    if request.method == "POST":
-        # Get data from form submission
-        title = request.POST.get("title")
-        abstract = request.POST.get("abstract")
-        keywords = request.POST.get("keywords")
-
-        # Store data in session to pass it to the next view
-        request.session['title'] = title
-        request.session['abstract'] = abstract
-        request.session['keywords'] = keywords
-
-        print(title)
-        print(abstract)
-        print(keywords)
-
-        # Redirect to result view
-        return redirect("result")  # Use URL name for cleaner redirection
-
     return render(request, "checker/check_article.html")
 
 
 @login_required
-def result(request):
-    # # Retrieve stored session data
-    title = request.session.get("title", "")
-    abstract = request.session.get("abstract", "")
-    keywords = request.session.get("keywords", "")
+def input_article(request):
+    if request.method == "POST":
+        abstract = request.POST.get("abstract", "")
 
-    # if not abstract:
-    #     return redirect("check-abstract")
+        if abstract:
+            request.session["abstract"] = abstract
+            return render(request, "checker/result.html")
+
+from .models import AbstractInput
 
 
-    nlp_result = get_classifier().predict_abstract_sections(abstract)
-
-    return render(
-        request,
-        "checker/result.html",
-        {
-            "title": title,
-            "abstract": abstract,
-            "keywords": keywords,
-            "nlp_result": nlp_result,
-        },
-    )
-
-import pandas as pd
-from flask import Blueprint, jsonify, request
-
-# Initialize Blueprint
-views = Blueprint('views', __name__)
-
-# CSV Storage for User Abstracts
-abstracts_df = pd.DataFrame(columns=['Abstract'])
-
-@views.route('/save_abstract', methods=['POST'])
-def save_abstract():
-    try:
-        # Receive abstract from user input
-        abstract = request.form.get('abstract')
-        if not abstract or not abstract.strip():
-            return jsonify({"error": "Abstract cannot be empty."}), 400
-        
-        # Save dataset
-        global abstracts_df
-        abstracts_df = pd.concat([abstracts_df, pd.DataFrame({'Abstract': [abstract]})], ignore_index=True)
-        abstracts_df.to_csv("abstracts_by_user.csv", index=False)
-        
-        # Predict abstract sections
-        predicted_sections = get_classifier().predict_abstract_sections(abstract)
-        
-        return jsonify({
-            "message": "Input loaded successfully!",
-            "predicted_sections": predicted_sections
-        }), 200
+@login_required
     
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+def result(request):
+    title = request.POST.get("title", "")
+    keywords = request.POST.get("keywords", "")
+    abstract = request.POST.get("abstract", "")
+
+    nlp_result = process_data(abstract)
+    abstract_input = AbstractInput.objects.create(
+        user=request.user,
+        title=title,
+        abstract=abstract,
+        keywords=keywords,
+        result = nlp_result,
+    )
+    print(f"Abstract stored: {AbstractInput.objects.count()}")
+    print(f"{abstract_input.result}")
+    return redirect("result", abstract_id=abstract_input.inputID)
+
+def result_page(request, abstract_id):
+    abstract_input = AbstractInput.objects.get(inputID=abstract_id)
+    context = {
+        'id' : abstract_input.inputID,
+        'title': abstract_input.title,
+        'abstract': abstract_input.abstract,
+        'keywords': abstract_input.keywords,
+        'nlp_result': abstract_input.result,
+        }
+
+    return render(request, "checker/result.html", context)
+
+
+# @views.route("/save_abstract", methods=["POST"])
+# def save_abstract():
+#     try:
+#         # Receive abstract from user input
+#         abstract = request.form.get("abstract")
+#         if not abstract or not abstract.strip():
+#             return jsonify({"error": "Abstract cannot be empty."}), 400
+
+#         # Save dataset
+#         global abstracts_df
+#         abstracts_df = pd.concat(
+#             [abstracts_df, pd.DataFrame({"Abstract": [abstract]})], ignore_index=True
+#         )
+#         abstracts_df.to_csv("abstracts_by_user.csv", index=False)
+
+#         # Predict abstract sections
+#         predicted_sections = get_classifier().predict_abstract_sections(abstract)
+
+#         return (
+#             jsonify(
+#                 {
+#                     "message": "Input loaded successfully!",
+#                     "predicted_sections": predicted_sections,
+#                 }
+#             ),
+#             200,
+#         )
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500

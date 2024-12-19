@@ -14,9 +14,11 @@ class PasswordReset(models.Model):
 
 class AbstractInput(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    inputID = models.AutoField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.TextField(max_length=255)
     abstract=models.TextField(max_length=450)
     keywords=models.TextField(max_length=255)
+    result=models.TextField(max_length=450)
 
     def __str__(self):
-        return self.title
+        return f"Abstract saved"

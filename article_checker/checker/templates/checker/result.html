@@ -15,10 +15,7 @@
     <div class="container">
       <header class="text-center my-4">
         <h1>Carina</h1>
-        <p>
-          Quick and easy tool to verify your abstract follows the recommended
-          structure.
-        </p>
+        <p>Quick and easy tool to verify your abstract follows the recommended structure.</p>
       </header>
       <div class="result-section">
         <h3>Result</h3>
@@ -35,10 +32,10 @@
         <div class="result-box p-3 mb-3 border rounded">
           <h5>Analysis Result</h5>
           <ul>
-            {% for section, content in nlp_result.items %}
-              <li><strong>{{ section }}:</strong> {{ content }}</li>
+            {% for sentence, label in nlp_result %}
+            <li><strong>{{ sentence }}:</strong> {{ label }}</li>
             {% empty %}
-              <li>No analysis result available.</li>
+            <li>No analysis result available.</li>
             {% endfor %}
           </ul>
         </div>
@@ -51,8 +48,6 @@
     </div>
 
     <!-- Bootstrap JS -->
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

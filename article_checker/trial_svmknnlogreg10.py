@@ -91,9 +91,9 @@ for label in domain_specific_keys.keys():
 # Augment training sentences with domain-specific keywords
 augmented_training_sentences = []
 for label, contents in dictionary_content.items():
-    domain_keywords = " ".join(domain_specific_keys[label])  # Combine domain-specific keywords into a string
+    domain_keywords = " ".join(domain_specific_keys[label])
     for sentence in contents:
-        augmented_sentence = sentence + " " + domain_keywords  # Add domain keywords to the sentence
+        augmented_sentence = sentence + " " + domain_keywords
         augmented_training_sentences.append(augmented_sentence)
 
 #%% Tokenize input paragraph into sentences

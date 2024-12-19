@@ -22,7 +22,7 @@ class TestCarinaAbstractChecker(unittest.TestCase):
         service = Service(ChromeDriverManager().install())
         self.driver = webdriver.Chrome(service=service, options=options)
         self.driver.implicitly_wait(10)
-        self.driver.get("http://127.0.0.1:5500/")  # Update the URL as per your application
+        self.driver.get("http://127.0.0.1:5500/article_checker/checker/templates/checker/check_article.html")  # Update the URL as per your application
 
     def tearDown(self):
         """Tear down the test environment."""
