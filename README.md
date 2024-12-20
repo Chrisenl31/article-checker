@@ -18,7 +18,7 @@ CARINA is a web-based application that uses Natural Language Processing (NLP) me
 - **Interactive Interface**: Users can input their abstracts and get real-time feedback.
 - **Copyable Result**: Users can easily copy the structured analysis result to the clipboard.
 
-## Input
+### Input
 
 This project expects user to have 3 type of input from their abstract:
    - **Title**
