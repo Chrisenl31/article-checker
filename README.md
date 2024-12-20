@@ -2,52 +2,67 @@
 
 ## Project Description
 
-CARINA (Abstract Structure Recommendation) is a project that leverages Natural Language Processing (NLP) and multiclass text classification to evaluate and classify the structure of an abstract. This tool helps ensure that academic abstracts follow a semi-structured format that consists of the following sections:
+CARINA is a web-based application that uses Natural Language Processing (NLP) methods, specifically multiclass text classification, to classify whether the structure of an abstract is correctly formatted. The application processes input abstracts and outputs a semi-structured abstract consisting of five key sections:
+
 - **Background**
 - **Objectives**
 - **Methods**
-- **Goals**
+- **Results**
 - **Conclusions**
 
-## Features
+### Features
 
-- **Title and Abstract Input**: Users can input the title, abstract, and keywords of a research paper.
-- **Abstract Structure Evaluation**: The tool analyzes the structure of the abstract and classifies each section into predefined categories: Background, Objectives, Methods, Results, and Conclusions.
-- **Keyword Check**: The system checks if specific keywords are present in the abstract, indicating relevance to certain sections (e.g., "methods," "approach" for the Methods section).
-- **Sentence Grouping**: Sentences are grouped under the appropriate labels (e.g., Background, Methods, Results) based on their content.
-- **User-Friendly Interface**: A simple and intuitive web interface that allows users to submit abstracts and see the structured output, as well as check the presence of keywords.
-- **Copy Function**: Users can copy the analysis result with the press of a button to easily share the structured abstract.
+- **Abstract Classification**: Classifies abstracts into predefined labels: Background, Objectives, Methods, Results, and Conclusions.
+- **Keyword Matching**: Checks for the presence of specific keywords in the abstract and highlights missing keywords.
+- **Word Count Validation**: Ensures that the abstract doesn't exceed the word limit (450 words).
+- **Interactive Interface**: Users can input their abstracts and get real-time feedback.
+- **Copyable Result**: Users can easily copy the structured analysis result to the clipboard.
 
-## How It Works
+## Installation Instructions
 
-1. **Input**: The user enters a research paper's abstract and keywords through a form.
-2. **Preprocessing**: The system tokenizes the abstract into individual sentences and processes them using NLP techniques.
-3. **Multiclass Classification**: A machine learning model classifies each sentence into one of five categories: Background, Objectives, Methods, Results, or Conclusions.
-4. **Keyword Matching**: The system checks if specified keywords (e.g., "methods," "result") appear in the abstract to validate the content of each section.
-5. **Output**: The abstract is grouped into its respective sections, and the analysis result is displayed on the interface.
-
-## Technologies Used
-
-- **Python**: The core programming language.
-- **Django**: For the backend web framework.
-- **Scikit-learn**: Used for multiclass classification and machine learning models.
-- **Natural Language Processing**: Sentence tokenization and classification.
-- **HTML/CSS/JavaScript**: For the frontend user interface.
-- **Bootstrap**: For responsive and clean layout.
-- **SVC (Support Vector Classification)**, **KNeighborsClassifier**, **LogisticRegression**: These classifiers are part of the voting mechanism used to classify sentences into the predefined abstract categories.
-
-## Setup Instructions
+To set up the project locally, follow the steps below.
 
 ### Prerequisites
 
-Before setting up the project, make sure you have the following installed:
+Ensure that you have the following installed on your machine:
 
-- **Python** (preferably Python 3.10 or later)
-- **Django**
-- **Scikit-learn**
-- **NLTK** (Natural Language Toolkit)
+- **Python 3.10** or later
+- **pip** (Python package installer)
+- **Git** (for version control)
 
-You can install the necessary Python packages using the following command:
+### Step-by-Step Installation
 
-```bash
-pip install -r requirements.txt
+1. **Clone the repository**
+
+   First, clone the repository to your local machine using Git:
+
+   ```bash
+   git clone <repository-url>
+   cd abstract_checker
+2. **Setup Virtual Environment**
+   Recommended to manage dependencies for this project.
+   ```bash
+   python -m venv venv
+   ```
+   Windows:
+   ```bash
+   venv\Scripts\activate
+   ```
+   macOS/Linux:
+   ```bash:
+   source venv/bin/activate
+   ```
+3. **Install all Dependencies**
+   You can check the dependencies by running a command on your terminal
+   ```bash
+   pip install -r requirement.txt
+   ```
+4. **Setup Database**
+   The database used is dbSqlite3
+   ```bash
+   python manage.py migrate
+   ```
+5. **Run the Server**
+   ```bash
+   python manage.py runserver
+   ```
