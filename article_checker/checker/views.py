@@ -1,3 +1,5 @@
+import json
+
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
@@ -11,30 +13,29 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .forms import AbstractForm
 from .models import *
-from .trial import process_data
+from .trial import abstract_sentences, keywords_check, process_data
 
+# @login_required
+# def check_article(request):
+#     if request.method == "POST":
+#         title = request.POST.get("title")
+#         abstract = request.POST.get("abstract")
 
-@login_required
-def check_article(request):
-    if request.method == "POST":
-        title = request.POST.get("title")
-        abstract = request.POST.get("abstract")
+#         # Data `title` dan `abstract` sudah bisa digunakan untuk NLP di sini
+#         # Model NLP yang akan memproses data ini ditangani tim lain
 
-        # Data `title` dan `abstract` sudah bisa digunakan untuk NLP di sini
-        # Model NLP yang akan memproses data ini ditangani tim lain
+#         # Kirim data ke halaman result untuk ditampilkan
+#         return render(
+#             request,
+#             "checker/check_artice.html",
+#             {
+#                 "title": title,
+#                 "abstract": abstract,
+#                 # "nlp_result": nlp_result,
+#             },
+#         )
 
-        # Kirim data ke halaman result untuk ditampilkan
-        return render(
-            request,
-            "checker/result.html",
-            {
-                "title": title,
-                "abstract": abstract,
-                # "nlp_result": nlp_result,
-            },
-        )
-
-    return render(request, "checker/check_article.html")
+#     return render(request, "checker/check_article.html")
 
 
 def RegisterView(request):
@@ -91,7 +92,7 @@ def LoginView(request):
             login(request, user)
 
             # ewdirect to check article page
-            return redirect("check_article")
+            return redirect("input_article")
         else:
             # redirect back to the login page if credentials are wrong
             messages.error(request, "Invalid username or password")
@@ -219,55 +220,154 @@ from django.shortcuts import redirect, render
 
 # from .trial import get_classifier
 
-
-@login_required
-def check_article(request):
-    return render(request, "checker/check_article.html")
-
-
 @login_required
 def input_article(request):
     if request.method == "POST":
-        abstract = request.POST.get("abstract", "")
+        title = request.POST.get("title")
+        abstract = request.POST.get("abstract")
+        keywords = request.POST.get("keywords")
 
-        if abstract:
-            request.session["abstract"] = abstract
-            return render(request, "checker/result.html")
+        # Process the abstract using NLP (use your NLP function here)
+        nlp_result = process_data(abstract)
+        print(nlp_result)
+        keyword_results = keywords_check(keywords, abstract)
+        word_count = abstract_sentences(abstract)
+        
+        # Define the labels and initialize their sentence lists
+        label_sentences = {
+            "Background": [],
+            "Objective": [],
+            "Methods": [],
+            "Results": [],
+            "Conclusions": []
+        }
+
+        # Group the sentences by their labels
+        for sentence, label in nlp_result:
+            if label in label_sentences:
+                label_sentences[label].append(sentence)
+
+        # Prepare the results
+        results = []
+        for label, sentences in label_sentences.items():
+            if sentences:
+                results.append({"label": label, "sentences": sentences, "empty": False})
+            else:
+                results.append({"label": label, "sentences": [], "empty": True})
+
+        # Store the abstract data in the database
+        AbstractInput.objects.create(
+            user=request.user,
+            title=title,
+            abstract=abstract,
+            keywords=keywords,
+            result=nlp_result,)
+
+        print(f"Abstract stored: {AbstractInput.objects.count()}")
+
+        # Prepare context to pass to the result page
+        context = {
+            'keyword_results': keyword_results,
+            'nlp_result': results,
+            'title': title,
+            'abstract': abstract,
+            'word_count': word_count,        }
+
+        # Pass result to result page or render it in the same page
+        return render(request, 'checker/result.html', context)
+
+    # If the method is GET, render the input form
+    return render(request, 'checker/check_article.html')
 
 from .models import AbstractInput
 
+# @login_required
+# def result(request):
+#     print("Form submitted")
+#     title = request.POST.get("title", "")
+#     keywords = request.POST.get("keywords", "")
+#     abstract = request.POST.get("abstract", "")
+#     print({title})
+
+#     nlp_result = process_data(abstract)
+#     nlp_result = "\n".join([f"{sentence}: {label}" for sentence, label in nlp_result])
+
+#     abstract_input = AbstractInput.objects.create(
+#         user=request.user,
+#         title=title,
+#         abstract=abstract,
+#         keywords=keywords,
+#         result = nlp_result,
+#     )
+#     print(f"Abstract stored: {AbstractInput.objects.count()}")
+#     # abstract_id=abstract_input.inputID
+#     # print(abstract_id)
+#     #ambil abstract simpan ke db
+#     abstract_input = AbstractInput.objects.filter(user=request.user).last()
+
+#     context = {
+#         'title': abstract_input.title,
+#         'abstract': abstract_input.abstract,
+#         'keywords': abstract_input.keywords,
+#         'nlp_result': abstract_input.result,
+#         }
+#     print(f"\nContext: {context}")
+#     return JsonResponse({
+#         'nlp_result': nlp_result,  # Send NLP result as JSON response
+#         'context': context  # Optionally, return the context to be used in the template (if needed)
+#     })
 
 @login_required
-    
 def result(request):
-    title = request.POST.get("title", "")
-    keywords = request.POST.get("keywords", "")
-    abstract = request.POST.get("abstract", "")
+    if request.method == "POST":
+        data = json.loads(request.body)
+        title = data.get("title", "")
+        abstract = data.get("abstract", "")
+        keywords = data.get("keywords", "")
 
-    nlp_result = process_data(abstract)
-    abstract_input = AbstractInput.objects.create(
-        user=request.user,
-        title=title,
-        abstract=abstract,
-        keywords=keywords,
-        result = nlp_result,
-    )
-    print(f"Abstract stored: {AbstractInput.objects.count()}")
-    print(f"{abstract_input.result}")
-    return redirect("result", abstract_id=abstract_input.inputID)
+        # Process the abstract with NLP function (process_data is assumed to be your NLP function)
+        nlp_result = process_data(abstract)
+        # nlp_result = "\n".join([f"\n{label}: {sentence}" for sentence, label in nlp_result])
+        label_sentences = {
+            "Background": [],
+            "Objective": [],
+            "Methods": [],
+            "Results": [],
+            "Conclusion": []
+        }
+        
+        # Populate the label_sentences dictionary
+        for sentence, label in nlp_result:
+            if label in label_sentences:
+                label_sentences[label].append(sentence)
 
-def result_page(request, abstract_id):
-    abstract_input = AbstractInput.objects.get(inputID=abstract_id)
-    context = {
-        'id' : abstract_input.inputID,
-        'title': abstract_input.title,
-        'abstract': abstract_input.abstract,
-        'keywords': abstract_input.keywords,
-        'nlp_result': abstract_input.result,
+        # Prepare a list for the context with the sentences under their respective labels
+        results = []
+        for label, sentences in label_sentences.items():
+            if sentences:
+                print(sentences)
+                results.append({"label": label, "sentences": sentences, "empty": False})
+            else:
+                results.append({"label": label, "sentences": [], "empty": True})
+
+        # Optionally save to the database (store it for later retrieval)
+        AbstractInput.objects.create(
+            user=request.user,
+            title=title,
+            abstract=abstract,
+            keywords=keywords,
+            result=nlp_result,
+        )
+        abstract_input = AbstractInput.objects.filter(user=request.user).last()
+        context = {
+            'title': abstract_input.title,
+            'abstract': abstract_input.abstract,
+            'keywords': abstract_input.keywords,
+            'nlp_result': abstract_input.result,
         }
 
-    return render(request, "checker/result.html", context)
-
+        # Render result page with context
+        return render(request, "checker/result.html", context)
 
 # @views.route("/save_abstract", methods=["POST"])
 # def save_abstract():

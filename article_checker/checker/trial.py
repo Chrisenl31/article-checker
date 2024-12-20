@@ -21,7 +21,7 @@ from sklearn.svm import SVC
 # nltk.download("stopwords")
 
 # Load and preprocess data
-data = pd.read_csv("new_dt2.csv")
+data = pd.read_csv(r'C:\Users\prith\OneDrive - Universitas Airlangga\Documents\UNAIR\AKADEMIK\SEM 5 - Bismillah\PRAK\PPL (I2) - Rabu\abstract_checker-main\abstract_checker-main\article_checker\article_checker\checker\new_dt2.csv')
 data = data.dropna()
 AbstractIs = data["Abstract"]
 
@@ -52,91 +52,94 @@ stop_words.update(string.punctuation)
 stop_words.update(map(str, range(10)))
 stemmer = PorterStemmer()
 
+#%%
+# Extract relevant content for each label
+dictionary_content = defaultdict(list)
+compiling_content = [(re.compile(pattern), label) for pattern, label in patterns]
 
-def process_data(data_input):
-    # Extract relevant content for each label
-    dictionary_content = defaultdict(list)
-    compiling_content = [(re.compile(pattern), label) for pattern, label in patterns]
+for abstract in AbstractIs:
+    for pattern, label in compiling_content:
+        match = pattern.findall(abstract)
+        if match:
+            dictionary_content[label].extend(match)
+# Prepare training data
+training_sentences = []
+training_labels = []
 
-    for abstract in AbstractIs:
-        for pattern, label in compiling_content:
-            match = pattern.findall(abstract)
-            if match:
-                dictionary_content[label].extend(match)
+for label, contents in dictionary_content.items():
+    for sentence in contents:
+        training_sentences.append(sentence)
+        training_labels.append(label)
+# Vectorize training sentences using TF-IDF
+print(len(training_sentences))  # Check if there are any sentences
+if len(training_sentences) == 0:
+    print("No training sentences found!")  # Check the first few sentences to confirm
 
-    # Prepare training data
-    training_sentences = []
-    training_labels = []
+# #%%
+# sentence_dumb= ["Ayam goreng", "fak you bingbong"]
+vectorizer = TfidfVectorizer(stop_words="english", max_features=100)
+X = vectorizer.fit_transform(training_sentences)
 
-    for label, contents in dictionary_content.items():
-        for sentence in contents:
-            training_sentences.append(sentence)
-            training_labels.append(label)
-
-    # Vectorize training sentences using TF-IDF
-    vectorizer = TfidfVectorizer(stop_words="english", max_features=1000)
-    X = vectorizer.fit_transform(training_sentences)
-
-    # Get top 10 words for each label based on TF-IDF scores
-    top_words = {}
-    for label, contents in dictionary_content.items():
-        # Vectorize the label-specific content
-        label_vector = vectorizer.transform(contents)
-        tfidf_scores = label_vector.sum(axis=0).A1
-        word_scores = {
-            word: tfidf_scores[idx]
-            for idx, word in enumerate(vectorizer.get_feature_names_out())
-        }
-
-        # Sort words by score and get the top 10 words
-        top_words[label] = sorted(word_scores, key=word_scores.get, reverse=True)[:10]
-
-    # Define domain-specific keywords
-    domain_specific_keys = {
-        "Background": [
-            "context",
-            "problem",
-            "introduction",
-            "motivation",
-            "increase",
-            "trend",
-            "study",
-            "background",
-        ],
-        "Objective": ["goal", "aim", "purpose", "objective", "understanding", "aimed"],
-        "Methods": ["approach", "design", "methodology", "process", "technique"],
-        "Results": ["result", "finding", "analysis", "outcome"],
-        "Conclusions": [
-            "conclusion",
-            "implication",
-            "summary",
-            "impact",
-            "inform",
-            "understand",
-        ],
+# Get top 10 words for each label based on TF-IDF scores
+top_words = {}
+for label, contents in dictionary_content.items():
+    # Vectorize the label-specific content
+    label_vector = vectorizer.transform(contents)
+    tfidf_scores = label_vector.sum(axis=0).A1
+    word_scores = {
+        word: tfidf_scores[idx]
+        for idx, word in enumerate(vectorizer.get_feature_names_out())
     }
 
-    # Augment domain-specific keywords with top 10 words for each label
-    for label in domain_specific_keys.keys():
-        domain_specific_keys[label].extend(top_words[label])
+    # Sort words by score and get the top 10 words
+    top_words[label] = sorted(word_scores, key=word_scores.get, reverse=True)[:10]
 
-    # Augment training sentences with domain-specific keywords
-    augmented_training_sentences = []
-    for label, contents in dictionary_content.items():
-        domain_keywords = " ".join(
-            domain_specific_keys[label]
-        )  # Combine domain-specific keywords into a string
-        for sentence in contents:
-            augmented_sentence = (
-                sentence + " " + domain_keywords
-            )  # Add domain keywords to the sentence
-            augmented_training_sentences.append(augmented_sentence)
+# Define domain-specific keywords
+domain_specific_keys = {
+    "Background": [
+        "context",
+        "problem",
+        "introduction",
+        "motivation",
+        "increase",
+        "trend",
+        "study",
+        "background",
+    ],
+    "Objective": ["goal", "aim", "purpose", "objective", "understanding", "aimed"],
+    "Methods": ["methods","approach", "design", "methodology", "process", "technique"],
+    "Results": ["result", "results","finding", "analysis", "outcome"],
+    "Conclusions": [
+        "conclusions", "conclusion",
+        "implication",
+        "summary",
+        "impact",
+        "inform",
+        "understand",
+    ],
+}
 
-    # Tokenize input paragraph into sentences
-    input_paragraph = data_input
-    sentences = sent_tokenize(input_paragraph)
+# Augment domain-specific keywords with top 10 words for each label
+for label in domain_specific_keys.keys():
+    domain_specific_keys[label].extend(top_words[label])
 
-    # Vectorize augmented sentences using TF-IDF
+# Augment training sentences with domain-specific keywords
+augmented_training_sentences = []
+for label, contents in dictionary_content.items():
+    domain_keywords = " ".join(
+        domain_specific_keys[label]
+    )  # Combine domain-specific keywords into a string
+    for sentence in contents:
+        augmented_sentence = (
+            sentence + " " + domain_keywords
+        )  # Add domain keywords to the sentence
+        augmented_training_sentences.append(augmented_sentence)
+
+#%%
+#DATA INPUT
+def process_data(abstract):
+    print(abstract)
+    sentences = sent_tokenize(abstract)
     X = vectorizer.fit_transform(augmented_training_sentences)
 
     # Train-test split (You can adjust the ratio)
@@ -161,19 +164,41 @@ def process_data(data_input):
 
     voting_classifier.fit(X_train, y_train)
     input_vectors = vectorizer.transform(sentences)
+    print(input_vectors)
     predicted_labels = voting_classifier.predict(input_vectors)
-
     results = []
-
     for i, sentence in enumerate(sentences):
         results.append(
-            {
-                "Sentence": sentence,
-                "Label": predicted_labels[i],
-            }
+            (sentence, predicted_labels[i])  # Append a tuple (sentence, label)
         )
-
     return results
+
+def keywords_check(keywords, abstract):
+    keyword_list = [keyword.strip() for keyword in keywords.split(',')]
+    abstract_lower = abstract.lower()
+    result_key = []
+    for keyword in keyword_list:
+        if keyword.lower() in abstract_lower:
+            result_key.append(f"{keyword} exists.")
+        else:
+            result_key.append(f"{keyword} not found in the abstract!")
+    return result_key
+
+def abstract_sentences(abstract):
+    word_count = len(abstract.split())  # Split the abstract by spaces to count words
+    if word_count > 450:
+        return "Words more than 450. Please reduce your abstract."
+    return None
+
+    # for i, sentence in enumerate(sentences):
+    #     results.append(
+    #         {
+    #             "Sentence": sentence,
+    #             "Label": predicted_labels[i],
+    #         }
+    #     )
+
+    # return results
 
     # # Print predictions
     # for i, sentence in enumerate(sentences):
@@ -193,3 +218,5 @@ def process_data(data_input):
     #     else:
     #         print(f"Your {label} is empty.")
     #     print("\n" + "-" * 50)
+
+# %%

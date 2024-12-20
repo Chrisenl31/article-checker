@@ -4,7 +4,7 @@ from . import views
 from .models import AbstractInput
 
 urlpatterns = [
-    path("", views.check_article, name="check_article"),
+    path("", views.input_article, name="input_article"),
     path("register/", views.RegisterView, name="register"),
     path("login/", views.LoginView, name="login"),
     path("logout/", views.LogoutView, name="logout"),
@@ -15,8 +15,8 @@ urlpatterns = [
         name="password-reset-sent",
     ),
     path("reset-password/<str:reset_id>/", views.ResetPassword, name="reset-password"),
-    path("check-abstract/", views.check_article, name="check_article"),
-    path("result/<uuid:abstract_id>", views.result_page, name="result"),
+    path("result/", views.result, name="result"),
+    path("check_article", views.result, name="check_article"),
     path("input_article/", views.input_article, name="input_article"),
     # path("input_article/", views.input_article, name="input_article"),
 ]

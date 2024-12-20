@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,14 +11,21 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/resultstyle.css' %}" />
   </head>
-  <body>
+  <>
     <div class="container">
       <header class="text-center my-4">
         <h1>Carina</h1>
         <p>Quick and easy tool to verify your abstract follows the recommended structure.</p>
       </header>
       <div class="result-section">
-        <h3>Result</h3>
+        <div>
+          {% if word_count %}
+          <div class="alert alert-danger warning" role="alert">
+              {{ word_count }}
+          </div>
+          {% endif %}
+        </div>
+        
         <div class="result-box p-3 mb-3 border rounded">
           <h5>Title</h5>
           <p>{{ title }}</p>
@@ -31,15 +38,42 @@
 
         <div class="result-box p-3 mb-3 border rounded">
           <h5>Analysis Result</h5>
-          <ul>
-            {% for sentence, label in nlp_result %}
-            <li><strong>{{ sentence }}:</strong> {{ label }}</li>
-            {% empty %}
-            <li>No analysis result available.</li>
-            {% endfor %}
-          </ul>
+          {% for result in nlp_result %}
+    <div class="result-label" id="result-label">
+        {% if result.empty %}
+        <h6 style="color:red">{{ result.label }}</h6>
+            <p style="color: red; font-weight: bold;">This {{ result.label }} is empty.</p>
+        {% else %}
+            <ul>
+              <h6 style="color:green; font-weight: bold;">{{ result.label }}</h6>
+                {% for sentence in result.sentences %}
+                    <li>{{ sentence }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% endfor %}
+<button class="btn btn-secondary copy-button" onclick="copyAnalysisResult()">Copy</button>
+<div class="alert alert-success" id="copySuccessMessage" style="display:none; margin-top: 10px;">
+    Analysis result copied to clipboard!
+</div>
         </div>
-      </div>
+
+
+      <div class="result-box p-3 mb-3 border rounded">
+      <h5>Keyword Check</h5>
+      <div id="keyword_results">
+        {% for result in keyword_results %}
+            <!-- Check if the result contains "not found" to style it red -->
+            {% if "not found" in result %}
+                <p style="color: red; font-weight: bold;">{{ result }}</p>
+            {% else %}
+                <p style="color: green; font-weight:bold">{{ result }}</p>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+</div>
 
       <!-- Footer -->
       <footer class="text-center mt-4">
@@ -49,5 +83,41 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function copyAnalysisResult() {
+        // Get all elements with the 'result-label' id (even though id should be unique, using class is better in practice)
+        var resultLabels = document.querySelectorAll("#result-label");
+        var analysisContent = "";
+    
+        // Loop through all elements and concatenate the content
+        resultLabels.forEach(function(label) {
+          analysisContent += label.innerText + "\n"; // Add each result to the final content
+        });
+    
+        // Create a temporary textarea element
+        var tempTextArea = document.createElement("textarea");
+        tempTextArea.value = analysisContent; // Set the text area value to the combined content
+        document.body.appendChild(tempTextArea);
+    
+        // Select the content of the temporary textarea
+        tempTextArea.select();
+        tempTextArea.setSelectionRange(0, 99999); // For mobile devices
+    
+        // Copy the content to the clipboard
+        document.execCommand("copy");
+    
+        // Remove the temporary textarea element
+        document.body.removeChild(tempTextArea);
+    
+        // Show success message
+        var successMessage = document.getElementById("copySuccessMessage");
+        successMessage.style.display = "block";
+    
+        // Hide success message after 2 seconds
+        setTimeout(function() {
+            successMessage.style.display = "none";
+        }, 2000);
+      }
+    </script>
   </body>
 </html>

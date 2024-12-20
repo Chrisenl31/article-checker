@@ -14,8 +14,7 @@ class PasswordReset(models.Model):
 
 class AbstractInput(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    inputID = models.AutoField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.TextField(max_length=255)
+    title = models.TextField(max_length=200)
     abstract=models.TextField(max_length=450)
     keywords=models.TextField(max_length=255)
     result=models.TextField(max_length=450)

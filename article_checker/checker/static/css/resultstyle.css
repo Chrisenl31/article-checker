@@ -82,3 +82,8 @@
         background-color: #6f42c1;
         color: white;
       }
+      .copy-button {
+        margin-top: 10px;
+        cursor: pointer;
+        align-items: right;
+    }
