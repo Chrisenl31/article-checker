@@ -18,6 +18,13 @@ CARINA is a web-based application that uses Natural Language Processing (NLP) me
 - **Interactive Interface**: Users can input their abstracts and get real-time feedback.
 - **Copyable Result**: Users can easily copy the structured analysis result to the clipboard.
 
+## Input
+
+This project expects user to have 3 type of input from their abstract:
+   - **Title**
+   - **Abstract**
+   - **Keywords**
+
 ## Installation Instructions
 
 To set up the project locally, follow the steps below.
@@ -40,6 +47,7 @@ Ensure that you have the following installed on your machine:
    git clone <repository-url>
    cd abstract_checker
 2. **Setup Virtual Environment**
+   
    Recommended to manage dependencies for this project.
    ```bash
    python -m venv venv
@@ -52,17 +60,19 @@ Ensure that you have the following installed on your machine:
    ```bash:
    source venv/bin/activate
    ```
-3. **Install all Dependencies**
+4. **Install all Dependencies**
+   
    You can check the dependencies by running a command on your terminal
    ```bash
    pip install -r requirement.txt
    ```
-4. **Setup Database**
+6. **Setup Database**
+   
    The database used is dbSqlite3
    ```bash
    python manage.py migrate
    ```
-5. **Run the Server**
+8. **Run the Server**
    ```bash
    python manage.py runserver
    ```
